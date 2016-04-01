@@ -6,6 +6,7 @@ import org.springframework.context.annotation.Import;
 
 @Configuration
 @ComponentScan("service")
+@Import(value = { SecurityConfig.class })
 public class ServiceConfig {
    
      
