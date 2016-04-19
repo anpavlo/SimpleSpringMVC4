@@ -1,8 +1,13 @@
 package config;
 
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
+import org.springframework.context.annotation.Scope;
+import org.springframework.context.annotation.ScopedProxyMode;
 import org.springframework.core.env.Environment;
+import org.springframework.security.core.userdetails.UserDetailsService;
+import org.springframework.security.provisioning.UserDetailsManager;
 import org.springframework.social.UserIdSource;
 import org.springframework.social.config.annotation.ConnectionFactoryConfigurer;
 import org.springframework.social.config.annotation.EnableSocial;
@@ -11,21 +16,26 @@ import org.springframework.social.connect.*;
 import org.springframework.social.connect.mem.InMemoryUsersConnectionRepository;
 import org.springframework.social.connect.support.OAuth2Connection;
 import org.springframework.social.connect.web.ConnectController;
+import org.springframework.social.facebook.api.Facebook;
 import org.springframework.social.facebook.connect.FacebookConnectionFactory;
 import org.springframework.social.security.AuthenticationNameUserIdSource;
+import social.SocialSignUp;
 
 import java.util.List;
 
 @Configuration
 @EnableSocial
 public class SocialConfig implements SocialConfigurer{
+    @Autowired
+    private UserDetailsManager userDetailsManager;
 
     @Override
     public void addConnectionFactories(ConnectionFactoryConfigurer connectionFactoryConfigurer, Environment environment) {
-        connectionFactoryConfigurer.addConnectionFactory(new FacebookConnectionFactory(
+        FacebookConnectionFactory facebookConnectionFactory = new FacebookConnectionFactory(
                 environment.getProperty("facebook.app.id"),
-                environment.getProperty("facebook.app.secret")
-        ));
+                environment.getProperty("facebook.app.secret"));
+        facebookConnectionFactory.setScope("user_friends,user_likes,user_posts");
+        connectionFactoryConfigurer.addConnectionFactory(facebookConnectionFactory);
     }
 
     @Override
@@ -36,7 +46,7 @@ public class SocialConfig implements SocialConfigurer{
     @Override
     public UsersConnectionRepository getUsersConnectionRepository(ConnectionFactoryLocator connectionFactoryLocator) {
         InMemoryUsersConnectionRepository repository = new InMemoryUsersConnectionRepository(connectionFactoryLocator);
-        repository.setConnectionSignUp(new SignUp());
+        repository.setConnectionSignUp(connectionSignUp(userDetailsManager));
         return repository;
     }
 
@@ -46,10 +56,15 @@ public class SocialConfig implements SocialConfigurer{
         return new ConnectController(connectionFactoryLocator, connectionRepository);
     }
 
-    public static class SignUp implements ConnectionSignUp {
-        @Override
-        public String execute(Connection<?> connection) {
-            return connection.getDisplayName();
-        }
+    @Bean
+    public ConnectionSignUp connectionSignUp(UserDetailsManager userDetailsManager) {
+        return new SocialSignUp(userDetailsManager);
+    }
+
+    @Bean
+    @Scope(value="request", proxyMode= ScopedProxyMode.INTERFACES)
+    public Facebook facebook(ConnectionRepository repository) {
+        Connection<Facebook> connection = repository.findPrimaryConnection(Facebook.class);
+        return connection != null ? connection.getApi() : null;
     }
 }

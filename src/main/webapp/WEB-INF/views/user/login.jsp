@@ -13,10 +13,6 @@
     <h1>Facebook likes</h1>
 </div>
 <sec:authorize access="isAnonymous()">
-    <!-- Login form -->
-    <div class="panel panel-default">
-
-    <!-- Social Sign In Buttons -->
     <div class="panel panel-default">
         <div class="panel-body">
             <h2>Log in with Facebook</h2>
