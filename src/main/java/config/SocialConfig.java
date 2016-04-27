@@ -6,7 +6,6 @@ import org.springframework.context.annotation.Configuration;
 import org.springframework.context.annotation.Scope;
 import org.springframework.context.annotation.ScopedProxyMode;
 import org.springframework.core.env.Environment;
-import org.springframework.security.core.userdetails.UserDetailsService;
 import org.springframework.security.provisioning.UserDetailsManager;
 import org.springframework.social.UserIdSource;
 import org.springframework.social.config.annotation.ConnectionFactoryConfigurer;
@@ -14,14 +13,13 @@ import org.springframework.social.config.annotation.EnableSocial;
 import org.springframework.social.config.annotation.SocialConfigurer;
 import org.springframework.social.connect.*;
 import org.springframework.social.connect.mem.InMemoryUsersConnectionRepository;
-import org.springframework.social.connect.support.OAuth2Connection;
 import org.springframework.social.connect.web.ConnectController;
 import org.springframework.social.facebook.api.Facebook;
 import org.springframework.social.facebook.connect.FacebookConnectionFactory;
 import org.springframework.social.security.AuthenticationNameUserIdSource;
+import social.InvitableFriendsOperations;
+import social.InvitableFriendsOperationsImpl;
 import social.SocialSignUp;
-
-import java.util.List;
 
 @Configuration
 @EnableSocial
@@ -66,5 +64,11 @@ public class SocialConfig implements SocialConfigurer{
     public Facebook facebook(ConnectionRepository repository) {
         Connection<Facebook> connection = repository.findPrimaryConnection(Facebook.class);
         return connection != null ? connection.getApi() : null;
+    }
+
+    @Bean
+    @Scope(value="request", proxyMode= ScopedProxyMode.INTERFACES)
+    public InvitableFriendsOperations invitableFriends(Facebook facebook) {
+        return new InvitableFriendsOperationsImpl(facebook);
     }
 }

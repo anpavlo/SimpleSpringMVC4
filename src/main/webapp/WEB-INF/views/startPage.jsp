@@ -19,6 +19,8 @@
   <li>${friend.name}</li>
 </c:forEach>
 </ul>
-<a href="${pageContext.request.contextPath}/getXML">Download XML</a>
+<a href="${pageContext.request.contextPath}/friendsXML">Raw XML</a>
+<a href="${pageContext.request.contextPath}/friendsXHTML">XML as HTML</a>
+<a href="${pageContext.request.contextPath}/friendsXHTMLServer">XML as HTML (server)</a>
 </body>
 </html>

@@ -41,6 +41,6 @@ public class FacebookInvitableFriend extends FacebookFriend {
 
     @Override
     public String getPictureURL() {
-        return null;
+        return (String) invitableFriend.getExtraData().get("");
     }
 }
